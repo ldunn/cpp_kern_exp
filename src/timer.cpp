@@ -8,13 +8,7 @@ void ckern::devices::Timer::install()
   Framebuffer::puts("Installed PIT handler.\n");
 }
 
-void ckern::devices::Timer::handler(Interrupts::InterruptState state)
+void ckern::devices::Timer::handler(Interrupts::InterruptState /*state*/)
 {
   ticks++;
-  if (ticks % 10 == 0)
-  {
-    const char c = Keyboard::getc();
-    if (c)
-      Framebuffer::putc(c);
-  }
 }

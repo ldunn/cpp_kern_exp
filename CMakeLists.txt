@@ -5,7 +5,7 @@ project(CKern VERSION 0.0.1)
 set(CMAKE_ASM_NASM_OBJECT_FORMAT elf)
 set(CMAKE_LINKER_TYPE BFD)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_C_FLAGS "-m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs")
 set(CMAKE_CXX_FLAGS "-m32 -ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs")

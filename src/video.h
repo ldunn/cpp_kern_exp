@@ -1,3 +1,5 @@
+#include "strutil.h"
+
 #ifndef CKERN_VIDEO_H
 #define CKERN_VIDEO_H
 
@@ -45,6 +47,15 @@ namespace ckern
       static void puts(const char *s);
 
       static void scroll(int nlines);
+
+      template<typename ...Args>
+      inline static void printf(const char *fmt, Args... args)
+      {
+        char buf[1024];
+
+        sprintf(buf, fmt, args...);
+        puts(buf);
+      }
 
     private:
       inline static int cursor_x{};

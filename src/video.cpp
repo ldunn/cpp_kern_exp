@@ -1,4 +1,5 @@
 #include "util.h"
+#include <type_traits>
 #include "video.h"
 
 void ckern::Framebuffer::write_cell(int x, int y, char c, Color fg, Color bg)

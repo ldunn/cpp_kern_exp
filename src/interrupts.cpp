@@ -57,7 +57,7 @@ extern "C" __attribute__((noreturn)) void exception_handler(ckern::Interrupts::I
   while (1) {};
 }
 
-extern "C" void __attribute__((noreturn)) irq_handler(ckern::Interrupts::InterruptState state)
+extern "C" void irq_handler(ckern::Interrupts::InterruptState state)
 {
   const int irq_num = state.int_num - 32;
   if (ckern::Interrupts::IRQ_handlers[irq_num])

@@ -48,16 +48,23 @@ unsigned char kbdus[128] =
     0,	/* All other keys are undefined */
 };
 
-void ckern::devices::Keyboard::handler(Interrupts::InterruptState state)
+void ckern::devices::Keyboard::handler(Interrupts::InterruptState /*state*/)
 {
   auto scancode = Util::inb(0x60);
+
+  const auto next_write = (last_written_char + 1) % buffer.size();
+  // If we're about to wrap around and start overwriting unconsumed data, drop the character
+  if (next_write == last_read_char)
+  {
+     return;
+  } 
+
   if (!(scancode & 0x80))
   {
     if (kbdus[scancode])
     {
-      if (++last_written_char >= buffer.size())
-        last_written_char = 0;
-      buffer[last_written_char] = kbdus[scancode];
+      buffer[next_write] = kbdus[scancode];
+      last_written_char = next_write;
     }
   }
 }
