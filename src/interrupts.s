@@ -2,74 +2,125 @@ global disable_interrupts
 
 disable_interrupts:
     cli
-    ret
+    retq
 
 global enable_interrupts
 
 enable_interrupts:
     sti
-    ret
-
-idtr dw 0 ; limit (IDT size)
-     dd 0 ; base address
+    retq
 
 global init_idt
 
 ; initialize the IDT. Also enables interrupts
 ; [esp]  - return address
-; [esp + 4] - size of IDT structure
-; [esp + 8] - address of the IDT structure to load
+; rdi - pointer to IDT descriptor
 init_idt:
-    mov ax, [esp + 4]
-    mov [idtr], ax
-    mov eax, [esp + 8]
-    mov [idtr + 2], eax
-    lidt [idtr]
-    ret
+    lidt [rdi]
+    retq
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
     cli
-    pushad
+    ;pushad
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rsp
+    push rbp
+    push rsi
+    push rdi
+
     mov eax, %1
-    push eax
+    push rax
+
     cld
     call exception_handler
-    add esp, 4
-    popad
-    add esp, 4
-    iret
+    add esp, 8
+    ;popad
+
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rsp
+    pop rbx
+    pop rdx
+    pop rcx
+    pop rax
+
+    add esp, 8
+    iretq
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
     cli
     push 0xdead ; Push dummy error code
-    pushad
+    ;pushad
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rsp
+    push rbp
+    push rsi
+    push rdi
+
     mov eax, %1
-    push eax
+    push rax
     cld
     call exception_handler
-    add esp, 4
-    popad
-    add esp, 4
-    iret
+    add esp, 8
+    ;popad
+
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rsp
+    pop rbx
+    pop rdx
+    pop rcx
+    pop rax
+
+    add esp, 8
+    iretq
 %endmacro
 
 %macro irq_stub 1
 irq_stub_%+%1:
     cli
     push 0xdead ; Push dummy error code 
-    pushad
+    ;pushad
+
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rsp
+    push rbp
+    push rsi
+    push rdi
+    
     mov eax, %1
-    push eax
+    push rax
     cld
     call irq_handler
-    add esp, 4
-    popad
-    add esp, 4
+    add esp, 8
+    ;popad
+    
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rsp
+    pop rbx
+    pop rdx
+    pop rcx
+    pop rax
+
+    add esp, 8
     sti
-    iret
+    iretq
 %endmacro
 
 extern exception_handler
@@ -130,12 +181,12 @@ global isr_stub_table
 isr_stub_table:
 %assign i 0 
 %rep    32
-    dd isr_stub_%+i ; use DQ instead if targeting 64-bit
+    dq isr_stub_%+i ; use DQ instead if targeting 64-bit
 %assign i i+1 
 %endrep
 
 %assign i 32
 %rep 16
-    dd irq_stub_%+i
+    dq irq_stub_%+i
 %assign i i+1
 %endrep

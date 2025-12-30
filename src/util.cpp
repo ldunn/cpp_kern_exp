@@ -1,14 +1,26 @@
 #include "util.h"
 
-void ckern::Util::memcpy(void *dst, const void *src, int n)
+void ckern::Util::memcpy(void *dst, const void *src, size_t n)
 {
-  const char *src_c = (const char *)src;
+  const char *src_c = reinterpret_cast<const char *>(src);
   char *dst_c = (char *)dst;
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
     *dst_c++ = *src_c++;
   }
 }
+
+void *ckern::Util::memset(void *buf, int c, size_t n)
+{
+  char *buf_c = reinterpret_cast<char *>(buf);
+  for (size_t i = 0; i < n; i++)
+  {
+    *buf_c++ = static_cast<char>(c);
+  }
+  return buf;
+}
+
+void *memset(void *buf, int c, size_t n) { return ckern::Util::memset(buf, c, n); }
 
 extern "C" void _outb(uint16_t port, uint8_t c);
 void ckern::Util::outb(uint16_t port, uint8_t c) { _outb(port, c); }

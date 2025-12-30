@@ -1,4 +1,3 @@
-#include <array>
 #include <cstdint>
 
 #ifndef CKERN_INTERRUPTS_H
@@ -16,11 +15,13 @@ namespace ckern::Interrupts
     unsigned char dpl : 2;
     bool present : 1;
     short offset_16_31;
+    unsigned offset_32_63;
+    unsigned reserved_2{0};
   };
 
   struct IDTEntry
   {
-    uint32_t offset;
+    uintptr_t offset;
     bool present;
     unsigned char dpl;
     unsigned char type;
@@ -36,6 +37,7 @@ namespace ckern::Interrupts
       encoded.dpl = dpl;
       encoded.present = present;
       encoded.offset_16_31 = (offset >> 16) & 0xFFFF;
+      encoded.offset_32_63 = (offset >> 32) & 0xFFFFFFFF;
 
       return encoded;
     }
@@ -43,23 +45,22 @@ namespace ckern::Interrupts
 
   struct InterruptState
   {
-    uint32_t int_num;
+    uint64_t int_num;
 
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t esp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t rbp;
+    uint64_t rsp;
+    uint64_t rbx;
+    uint64_t rdx;
+    uint64_t rcx;
+    uint64_t rax;
+    
+    uint64_t err_code;
 
-    uint32_t err_code;
-
-    uint32_t eip;
-    uint32_t cs;
-    uint32_t eflags;
-
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t eflags;
   };
 
   class IDT
@@ -68,7 +69,7 @@ namespace ckern::Interrupts
       static void init();
       static constexpr int entry_count{256};
     private:
-      alignas(16) inline static EncodedIDTEntry entries[entry_count];
+      alignas(16) inline static EncodedIDTEntry entries[256];
   };
 
   class PIC
@@ -96,7 +97,7 @@ namespace ckern::Interrupts
   };
 
   using Handler = void(*)(InterruptState);
-  extern std::array<Handler, 16> IRQ_handlers;
+  extern Handler IRQ_handlers[16];
 
   inline void install_handler(Handler h, int irq_num) { IRQ_handlers[irq_num] = h; }
 

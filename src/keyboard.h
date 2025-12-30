@@ -1,4 +1,5 @@
 #include "interrupts.h"
+#include "util.h"
 
 #ifndef CKERN_KEYBOARD_H
 #define CKERN_KEYBOARD_H
@@ -17,10 +18,10 @@ namespace ckern::devices
 
     private:
 
-      static inline std::array<char, 256> buffer{};
+      static inline char buffer[256]{};
 
-      static inline unsigned last_read_char{buffer.size() - 1};
-      static inline unsigned int last_written_char{buffer.size() - 1};
+      static inline unsigned last_read_char{Util::arr_sizeof(buffer) - 1};
+      static inline unsigned int last_written_char{Util::arr_sizeof(buffer) - 1};
   };
 }
 

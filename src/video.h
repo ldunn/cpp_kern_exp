@@ -51,7 +51,7 @@ namespace ckern
       template<typename ...Args>
       inline static void printf(const char *fmt, Args... args)
       {
-        char buf[1024];
+        char buf[1024]{};
 
         sprintf(buf, fmt, args...);
         puts(buf);

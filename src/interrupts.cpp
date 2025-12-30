@@ -4,9 +4,8 @@
 #include "util.h"
 
 #include <bit>
-#include <array>
 
-std::array<ckern::Interrupts::Handler, 16> ckern::Interrupts::IRQ_handlers = {};
+ckern::Interrupts::Handler ckern::Interrupts::IRQ_handlers[16] = {};
 
 extern "C" void disable_interrupts();
 
@@ -22,7 +21,7 @@ void ckern::Interrupts::enable()
   enable_interrupts();
 }
 
-static std::array<const char *, 32> fault_msgs{
+const char * fault_msgs[32]{
   "Division by zero",
   "Debug",
   "Non-maskable interrupt",
@@ -51,7 +50,7 @@ static std::array<const char *, 32> fault_msgs{
 extern "C" __attribute__((noreturn)) void exception_handler(ckern::Interrupts::InterruptState state)
 {
   ckern::Framebuffer::puts("[!!!] Got exception: ");
-  ckern::Framebuffer::puts(fault_msgs[state.int_num]);
+  ckern::Framebuffer::printf("%d",fault_msgs[state.int_num]);
   ckern::Framebuffer::puts("\nMachine halted.");
   __asm__ volatile("hlt");
   while (1) {};
@@ -73,8 +72,14 @@ extern "C" void irq_handler(ckern::Interrupts::InterruptState state)
   ckern::Interrupts::PIC::send_EOI(irq_num);
 }
 
-extern "C" void init_idt(uint16_t limit, ckern::Interrupts::EncodedIDTEntry *base);
-extern void *isr_stub_table[];
+struct
+{
+  uint16_t limit;
+  ckern::Interrupts::EncodedIDTEntry *addr;
+} __attribute__((packed)) idtr;
+
+extern "C" void init_idt(void *idtr);
+extern void * isr_stub_table[];
 void ckern::Interrupts::IDT::init()
 {
   Framebuffer::puts("Initializing IDT...");
@@ -82,14 +87,16 @@ void ckern::Interrupts::IDT::init()
   for (int i = 0; i < 48; i++)
   {
     entries[i] = IDTEntry{
-      std::bit_cast<uint32_t>(isr_stub_table[i]),
+      std::bit_cast<std::uintptr_t>(isr_stub_table[i]),
       true,
       0,
       0xF,
       GDT::Entries::Ring0Code * sizeof(GDT::EncodedGDTEntry)
     }.encode();
   }
-  init_idt(sizeof(entries) - sizeof(EncodedIDTEntry), entries);
+  idtr.limit = (Util::arr_sizeof(entries) - 1) * sizeof(entries[0]);
+  idtr.addr = entries;
+  init_idt(&idtr);
 
   Framebuffer::puts("done.\n");
 }
@@ -114,7 +121,7 @@ void ckern::Interrupts::PIC::init()
 
   // Set 8086 mode (?)
   Util::outb(MasterData, static_cast<unsigned char>(Commands::ICW4Use8086));
-  Util:: outb(SlaveData, static_cast<unsigned char>(Commands::ICW4Use8086));
+  Util::outb(SlaveData, static_cast<unsigned char>(Commands::ICW4Use8086));
 
   // Unmask both PICs
   Util::outb(MasterData, 0);

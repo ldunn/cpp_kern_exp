@@ -52,7 +52,7 @@ void ckern::devices::Keyboard::handler(Interrupts::InterruptState /*state*/)
 {
   auto scancode = Util::inb(0x60);
 
-  const auto next_write = (last_written_char + 1) % buffer.size();
+  const auto next_write = (last_written_char + 1) % Util::arr_sizeof(buffer);
   // If we're about to wrap around and start overwriting unconsumed data, drop the character
   if (next_write == last_read_char)
   {
@@ -65,6 +65,7 @@ void ckern::devices::Keyboard::handler(Interrupts::InterruptState /*state*/)
     {
       buffer[next_write] = kbdus[scancode];
       last_written_char = next_write;
+      ckern::Framebuffer::printf("%c", buffer[next_write]);
     }
   }
 }
@@ -72,7 +73,7 @@ void ckern::devices::Keyboard::handler(Interrupts::InterruptState /*state*/)
 char ckern::devices::Keyboard::getc()
 {
   if (last_read_char == last_written_char) { return 0; }
-  if (++last_read_char >= buffer.size())
+  if (++last_read_char >= Util::arr_sizeof(buffer))
   {
     last_read_char = 0;
   }
