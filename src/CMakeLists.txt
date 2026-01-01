@@ -6,6 +6,8 @@ add_executable(kernel.elf
     timer.cpp
     keyboard.cpp
     interrupts.cpp
+    paging.cpp
+    phys_alloc.cpp
     portio.s
     interrupts.s
     gdt.s

@@ -8,7 +8,7 @@ set(CMAKE_LINKER_TYPE BFD)
 set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_C_FLAGS "-m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs")
-set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti -fno-builtin -fno-stack-protector -fno-threadsafe-statics -nostartfiles -nodefaultlibs -fpic -mcmodel=kernel -mgeneral-regs-only")
+set(CMAKE_CXX_FLAGS "-ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti -fno-builtin -fno-stack-protector -fno-threadsafe-statics -fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}=. -nostartfiles -nodefaultlibs -fpic -mcmodel=kernel -mgeneral-regs-only")
 set(CMAKE_ASM_NASM_FLAGS "-g")
 set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
 

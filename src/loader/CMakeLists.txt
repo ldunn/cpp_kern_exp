@@ -2,6 +2,8 @@ add_executable(loader
     loader.s
     loader.c
     elf.c
+    paging.c
+    util.c
 )
 set_target_properties(loader PROPERTIES NASM_OBJ_FORMAT elf32)
 set_target_properties(loader PROPERTIES LINKER_LANGUAGE C)

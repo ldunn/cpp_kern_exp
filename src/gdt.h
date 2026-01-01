@@ -9,8 +9,8 @@ namespace ckern::GDT
   struct __attribute__((packed)) Flags
   {
     bool long_mode : 1 {false};
-    unsigned char type : 1 {1};
-    unsigned char granularity : 1 {1}; 
+    unsigned char type : 1 {false};
+    unsigned char granularity : 1 {false}; 
 
     constexpr unsigned char to_bits()
     {
@@ -45,7 +45,7 @@ namespace ckern::GDT
   };
   static_assert(sizeof(EncodedGDTEntry) == 8);
 
-  struct GDTEntry
+  struct GDTEntry 
   {
     void *base{};
     unsigned int limit: 20{};
@@ -83,7 +83,7 @@ namespace ckern::GDT
       static void init();
       static constexpr int entry_count{5};
     private:
-      inline static EncodedGDTEntry entries[entry_count];
+      alignas(16) inline static EncodedGDTEntry entries[entry_count];
   };
 }
 

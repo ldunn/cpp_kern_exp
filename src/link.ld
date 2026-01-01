@@ -1,12 +1,12 @@
-KERNEL_OFFSET = 0;
-KERNEL_START = 0x20000;
+KERNEL_OFFSET = 0xffffffff80000000;
+KERNEL_START = 16M;
 
 ENTRY(kmain)
 
 SECTIONS {
     . = KERNEL_START + KERNEL_OFFSET;
 
-    kernel_start = .;
+    _kernel_start = .;
 
     .text ALIGN (4K): AT(ADDR(.text) - KERNEL_OFFSET)
     {
@@ -29,5 +29,5 @@ SECTIONS {
         *(.bss)
     }
 
-    kernel_end =.;
+    _kernel_end =.;
 }

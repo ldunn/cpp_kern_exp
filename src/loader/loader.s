@@ -2,7 +2,7 @@ section .__mb_header
 align 4
 
 MAGIC_NUMBER    equ 0x1BADB002
-MOD_ALIGN           equ 1 << 0 ; Align loaded modules on page boundaries
+MOD_ALIGN       equ 1 << 0 ; Align loaded modules on page boundaries
 MEMINFO         equ 1 << 1 ; Provide memory map
 FLAGS           equ MOD_ALIGN | MEMINFO
 CHECKSUM        equ -(MAGIC_NUMBER + FLAGS)
@@ -16,23 +16,6 @@ STACK_SIZE equ 16384
 bootstrap_stack:
     resb STACK_SIZE
 bootstrap_stack_top:
-
-PML4T_ADDR equ 0x1000
-PDPT_ADDR equ 0x2000
-PDT_ADDR equ 0x3000
-PT_ADDR equ 0x4000
-SIZEOF_PAGE_TABLE equ 4096
-
-; the page table only uses certain parts of the actual address
-PT_ADDR_MASK equ 0xffffffffff000
-PT_PRESENT equ 1                 ; marks the entry as in use
-PT_READABLE equ 2                ; marks the entry as r/w
-
-ENTRIES_PER_PT equ 512
-SIZEOF_PT_ENTRY equ 8
-PAGE_SIZE equ 0x1000
-
-CR4_PAE_ENABLE equ 1 << 5
 
 section .text
 
@@ -63,40 +46,32 @@ loader:
 
     mov esp, bootstrap_stack_top
 
+    ; Store the multiboot info  for the kernel (pushing 0s because we will pop these in 64-bit mode)
+    ; and then push it again for the loader
+    push 0
+    push ebx
+    push 0
+    push eax
+
     push ebx
     push eax
 
     extern loader_main
     call loader_main
-    ; eax contains the entry point of the kernel - we're going to pop it in 64-bit mode so push a 0 dword first
-    push 0
+    
+    add esp, 8
+
+    ; edx:eax contains the entry point of the kernel
+    push edx
     push eax
 
-    mov edi, PML4T_ADDR
+; Initialize paging
+
+    extern bootstrap_PML4T ; Defined in paging.c
+    mov edi, bootstrap_PML4T
     mov cr3, edi
 
-    xor eax, eax
-    mov ecx, SIZEOF_PAGE_TABLE
-    rep stosd ;; Write 4 * SIZEOF_PAGE_TABLE bytes
-    mov edi, cr3
-    
-    mov DWORD [edi], PDPT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
-
-    mov edi, PDPT_ADDR
-    mov DWORD [edi], PDT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
-
-    mov edi, PDT_ADDR
-    mov DWORD [edi], PT_ADDR & PT_ADDR_MASK | PT_PRESENT | PT_READABLE
-    
-    mov edi, PT_ADDR
-    mov ebx, PT_PRESENT | PT_READABLE
-    mov ecx, ENTRIES_PER_PT ; 1 full table addresses 2MiB
-
-.set_entry:
-    mov DWORD [edi], ebx
-    add ebx, PAGE_SIZE
-    add edi, SIZEOF_PT_ENTRY
-    loop .set_entry
+CR4_PAE_ENABLE equ 1 << 5
 
     mov eax, cr4
     or eax, CR4_PAE_ENABLE
@@ -136,12 +111,6 @@ LONG_MODE     equ 1 << 5
 
 bits 64
 
-VGA_TEXT_BUFFER_ADDR equ 0xb8000
-COLS equ 80
-ROWS equ 25
-BYTES_PER_CHARACTER equ 2
-VGA_TEXT_BUFFER_SIZE equ BYTES_PER_CHARACTER * COLS * ROWS
-
 Realm64:
     mov ax, GDT.Data
     mov ds, ax
@@ -151,9 +120,10 @@ Realm64:
     mov ss, ax
 
     pop rax
+    pop rdi
+    pop rsi
     ;hlt
     jmp rax
 
-    hlt
 .loop:
     jmp .loop

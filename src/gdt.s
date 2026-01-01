@@ -3,7 +3,6 @@ global init_gdt
 ; initialize the GDT. Also reloads all segments
 ; [esp] - return address
 ; rdi - pointer to GDT descriptor
-; rsi - address of the GDT structure to load
 init_gdt:
     lgdt [rdi]
 reload_segments:

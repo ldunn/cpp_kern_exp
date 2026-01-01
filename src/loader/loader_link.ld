@@ -3,6 +3,8 @@ ENTRY(loader)
 SECTIONS {
     . = 1M;
 
+    loader_begin = .;
+
     .__mb_header : {
         *(.__mb_header)
     }
@@ -27,4 +29,6 @@ SECTIONS {
         *(COMMON)
         *(.bss)
     }
+
+    _loader_end = .;
 }

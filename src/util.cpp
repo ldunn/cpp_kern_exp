@@ -1,4 +1,5 @@
 #include "util.h"
+#include "video.h"
 
 void ckern::Util::memcpy(void *dst, const void *src, size_t n)
 {
@@ -18,6 +19,24 @@ void *ckern::Util::memset(void *buf, int c, size_t n)
     *buf_c++ = static_cast<char>(c);
   }
   return buf;
+}
+
+void ckern::Util::panic(const char *str)
+{
+  ckern::Framebuffer::set_color(Framebuffer::Color::White, Framebuffer::Color::Red);
+  ckern::Framebuffer::cls();
+  ckern::Framebuffer::printf("PANIC: %s\nMachine halted.", str);
+  __asm__ volatile("cli; hlt");
+  while (1) {};
+}
+
+void ckern::Util::panic(const char *str, const char *file, int line)
+{
+  ckern::Framebuffer::set_color(Framebuffer::Color::White, Framebuffer::Color::Red);
+  ckern::Framebuffer::cls();
+  ckern::Framebuffer::printf("PANIC: %s (%s:%d)\nMachine halted.", str, file, line);
+  __asm__ volatile("cli; hlt");
+  while (1) {};
 }
 
 void *memset(void *buf, int c, size_t n) { return ckern::Util::memset(buf, c, n); }

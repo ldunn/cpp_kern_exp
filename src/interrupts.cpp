@@ -49,11 +49,7 @@ const char * fault_msgs[32]{
 
 extern "C" __attribute__((noreturn)) void exception_handler(ckern::Interrupts::InterruptState state)
 {
-  ckern::Framebuffer::puts("[!!!] Got exception: ");
-  ckern::Framebuffer::printf("%d",fault_msgs[state.int_num]);
-  ckern::Framebuffer::puts("\nMachine halted.");
-  __asm__ volatile("hlt");
-  while (1) {};
+  ckern::Util::panic(fault_msgs[state.int_num]);
 }
 
 extern "C" void irq_handler(ckern::Interrupts::InterruptState state)
@@ -94,7 +90,7 @@ void ckern::Interrupts::IDT::init()
       GDT::Entries::Ring0Code * sizeof(GDT::EncodedGDTEntry)
     }.encode();
   }
-  idtr.limit = (Util::arr_sizeof(entries) - 1) * sizeof(entries[0]);
+  idtr.limit = sizeof(entries) - 1;
   idtr.addr = entries;
   init_idt(&idtr);
 

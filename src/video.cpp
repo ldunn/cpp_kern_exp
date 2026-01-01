@@ -35,6 +35,8 @@ void ckern::Framebuffer::cls()
       write_cell(i, j, ' ', fg, bg);
     }
   }
+  cursor_x = 0;
+  cursor_y = 0;
 }
 
 void ckern::Framebuffer::putc(char c)

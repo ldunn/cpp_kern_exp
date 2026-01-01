@@ -37,7 +37,7 @@ isr_stub_%+%1:
 
     cld
     call exception_handler
-    add esp, 8
+    add rsp, 8
     ;popad
 
     pop rdi
@@ -49,7 +49,7 @@ isr_stub_%+%1:
     pop rcx
     pop rax
 
-    add esp, 8
+    add rsp, 8
     iretq
 %endmacro
 
@@ -71,7 +71,7 @@ isr_stub_%+%1:
     push rax
     cld
     call exception_handler
-    add esp, 8
+    add rsp, 8
     ;popad
 
     pop rdi
@@ -83,7 +83,7 @@ isr_stub_%+%1:
     pop rcx
     pop rax
 
-    add esp, 8
+    add rsp, 8
     iretq
 %endmacro
 
@@ -106,7 +106,7 @@ irq_stub_%+%1:
     push rax
     cld
     call irq_handler
-    add esp, 8
+    add rsp, 8
     ;popad
     
     pop rdi
@@ -118,7 +118,7 @@ irq_stub_%+%1:
     pop rcx
     pop rax
 
-    add esp, 8
+    add rsp, 8
     sti
     iretq
 %endmacro

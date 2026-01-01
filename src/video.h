@@ -1,4 +1,5 @@
 #include "strutil.h"
+#include "util.h"
 
 #ifndef CKERN_VIDEO_H
 #define CKERN_VIDEO_H
@@ -6,35 +7,28 @@
 namespace ckern
 {
   class Framebuffer
-  {
-    enum class Color : unsigned char
-    {
-      Black = 0,
-      Blue,
-      Green,
-      Cyan,
-      Red,
-      Purple,
-      Brown,
-      Gray,
-      DarkGray,
-      LightBlue,
-      LightGreen,
-      LightCyan,
-      LightRed,
-      LightPurple,
-      Yellow,
-      White
-    };
-    
-    struct __attribute__((packed)) Character
-    {
-      char c;
-      Color fg: 4;
-      Color bg: 4;
-    };
-
+  {    
     public:
+
+      enum class Color : unsigned char
+      {
+        Black = 0,
+        Blue,
+        Green,
+        Cyan,
+        Red,
+        Purple,
+        Brown,
+        Gray,
+        DarkGray,
+        LightBlue,
+        LightGreen,
+        LightCyan,
+        LightRed,
+        LightPurple,
+        Yellow,
+        White
+      };
 
       static void set_color(Color new_fg, Color new_bg) { fg = new_fg; bg = new_bg; }
 
@@ -74,8 +68,15 @@ namespace ckern
       static constexpr int Rows{25};
       static constexpr int Cols{80};
       static constexpr int Size{Rows * Cols};
+      
+      struct __attribute__((packed)) Character
+      {
+        char c;
+        Color fg: 4;
+        Color bg: 4;
+      };
 
-      inline static Character * const buffer{reinterpret_cast<Character *>(0xb8000)};
+      inline static Character * const buffer{reinterpret_cast<Character *>(0xb8000 + ckern::Util::KERN_OFFSET)};
   };
 }
 
