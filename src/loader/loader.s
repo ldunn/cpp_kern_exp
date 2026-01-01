@@ -12,7 +12,7 @@ dd CHECKSUM
 
 section .bss
 align 16
-STACK_SIZE equ 16384
+STACK_SIZE equ 4096
 bootstrap_stack:
     resb STACK_SIZE
 bootstrap_stack_top:

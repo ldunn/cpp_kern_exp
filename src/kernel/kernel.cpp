@@ -65,6 +65,7 @@ extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
   ckern::Paging::switch_pages(&ckern::Paging::kern_pml4[0]);
 
   auto p = ckern::memory::phys_alloc.alloc_page();
+  ckern::memory::phys_alloc.free_page(p);
   auto p2 = ckern::memory::phys_alloc.alloc_page();
   ckern::Framebuffer::printf("Allocated page at %x\n", reinterpret_cast<uintptr_t>(p));
   ckern::Framebuffer::printf("Allocated page at %x\n", reinterpret_cast<uintptr_t>(p2));

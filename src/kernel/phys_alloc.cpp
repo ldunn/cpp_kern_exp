@@ -64,3 +64,14 @@ void ckern::memory::PhysAlloc::mark_page_filled(void *page)
 
   bitmap[bitmap_idx] |= set_bit;
 }
+
+void ckern::memory::PhysAlloc::free_page(void *page)
+{
+  const auto page_idx = reinterpret_cast<uintptr_t>(page) / PAGE_SIZE;
+  const auto bitmap_idx = page_idx / PAGES_PER_ENTRY;
+  const auto bitmap_bit = page_idx % PAGES_PER_ENTRY;
+
+  const BitmapType unset_bit = ~(1 << bitmap_bit);
+  
+  bitmap[bitmap_idx] &= unset_bit;
+}
