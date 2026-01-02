@@ -19,7 +19,7 @@ void ckern::Paging::map_page(uintptr_t phys, uintptr_t virt)
   if ((kern_pml4[pml4_off_id].flags & PT_PRESENT) != true)
   {
     auto new_pdp = reinterpret_cast<uintptr_t>(memory::phys_alloc.alloc_page());
-    Util::memset(reinterpret_cast<void *>(new_pdp), 0, PAGE_SIZE);
+    Util::memset(reinterpret_cast<void *>(P2V(new_pdp)), 0, PAGE_SIZE);
     kern_pml4[pml4_off_id] = {PT_PRESENT | PT_RW, PT_ADDR_BASE(new_pdp), 0, 0};
   }
 
@@ -28,7 +28,7 @@ void ckern::Paging::map_page(uintptr_t phys, uintptr_t virt)
   if ((pdp[pdp_off_id].flags & PT_PRESENT) != true)
   {
     auto new_pd = reinterpret_cast<uintptr_t>(memory::phys_alloc.alloc_page());
-    Util::memset(reinterpret_cast<void *>(new_pd), 0, PAGE_SIZE);
+    Util::memset(reinterpret_cast<void *>(P2V(new_pd)), 0, PAGE_SIZE);
     pdp[pdp_off_id] = {PT_PRESENT | PT_RW, PT_ADDR_BASE(new_pd), 0, 0};
   }
 
@@ -37,7 +37,7 @@ void ckern::Paging::map_page(uintptr_t phys, uintptr_t virt)
   if ((pd[pd_off_id].flags & PT_PRESENT) != true)
   {
     auto new_pt = reinterpret_cast<uintptr_t>(memory::phys_alloc.alloc_page());
-    Util::memset(reinterpret_cast<void *>(new_pt), 0, PAGE_SIZE);
+    Util::memset(reinterpret_cast<void *>(P2V(new_pt)), 0, PAGE_SIZE);
     pd[pd_off_id] = {PT_PRESENT | PT_RW, PT_ADDR_BASE(new_pt), 0, 0};
   }
 

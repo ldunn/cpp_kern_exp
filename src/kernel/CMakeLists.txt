@@ -8,6 +8,7 @@ add_executable(kernel.elf
     interrupts.cpp
     paging.cpp
     phys_alloc.cpp
+    heap.cpp
     portio.s
     interrupts.s
     gdt.s

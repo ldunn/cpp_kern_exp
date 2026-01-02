@@ -6,7 +6,7 @@
 
 namespace ckern
 {
-  inline unsigned __itoa_len(uint32_t val, unsigned base)
+  inline unsigned __itoa_len(uint64_t val, unsigned base)
   {
     unsigned n = 1;
     unsigned b = base;
@@ -18,7 +18,7 @@ namespace ckern
     return n;
   }
 
-  inline char * itoa(int32_t val, char *buf, unsigned base)
+  inline char * itoa(int64_t val, char *buf, unsigned base)
   {
     const static char digits[16]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
@@ -30,7 +30,7 @@ namespace ckern
       val = -val;
     }
 
-    auto uval = static_cast<uint32_t>(val);
+    auto uval = static_cast<uint64_t>(val);
     auto len = __itoa_len(val, base);
 
     for (int i = len - 1; i >= 0; i--)
@@ -91,9 +91,9 @@ namespace ckern
             }
             break;
           case 'd':
-            if constexpr (std::is_convertible_v<T, int32_t>)
+            if constexpr (std::is_convertible_v<T, int64_t>)
             {
-              new_buf = itoa(static_cast<int32_t>(val), buf, 10);
+              new_buf = itoa(static_cast<int64_t>(val), buf, 10);
             }
             break;
           case 's':
@@ -103,9 +103,9 @@ namespace ckern
             }
             break;
           case 'x':
-            if constexpr (std::is_convertible_v<T, int32_t>)
+            if constexpr (std::is_convertible_v<T, uint64_t>)
             {
-              new_buf = itoa(static_cast<int32_t>(val), buf, 16);
+              new_buf = itoa(static_cast<uint64_t>(val), buf, 16);
             }
             break;
         }

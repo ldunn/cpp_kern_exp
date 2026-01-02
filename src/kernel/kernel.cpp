@@ -8,6 +8,7 @@
 #include "strutil.h"
 #include "phys_alloc.h"
 #include "paging.h"
+#include "heap.h"
 
 extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
 {
@@ -64,20 +65,17 @@ extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
   
   ckern::Paging::switch_pages(&ckern::Paging::kern_pml4[0]);
 
+  ckern::memory::init_kern_heap();
+
   auto p = ckern::memory::phys_alloc.alloc_page();
   ckern::memory::phys_alloc.free_page(p);
   auto p2 = ckern::memory::phys_alloc.alloc_page();
-  ckern::Framebuffer::printf("Allocated page at %x\n", reinterpret_cast<uintptr_t>(p));
-  ckern::Framebuffer::printf("Allocated page at %x\n", reinterpret_cast<uintptr_t>(p2));
+  ckern::Framebuffer::printf("Allocated page at 0x%x\n", reinterpret_cast<uintptr_t>(p));
+  ckern::Framebuffer::printf("Allocated page at 0x%x\n", reinterpret_cast<uintptr_t>(p2));
 
   ckern::Interrupts::enable();
 
   while (1) {};
 
-  if (mb_magic == ckern::MultibootMagic)
-  {
-    ckern::Framebuffer::printf("Found correct multiboot magic: 0x%x\n", mb_magic);
-  }
-  
   return -1;
 }

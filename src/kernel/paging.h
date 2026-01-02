@@ -1,5 +1,7 @@
 #include <cstdint>
 
+#include "util.h"
+
 #ifndef CKERN_PAGING_H
 #define CKERN_PAGING_H
 
@@ -50,17 +52,16 @@ namespace ckern::Paging
   constexpr uintptr_t VIRT_PT_OFF(uintptr_t addr) { return (addr >> 12) & 0x1ff; }
   constexpr uintptr_t VIRT_PHYS_OFF(uintptr_t addr) { return addr & 0xfff; }
 
+  constexpr uintptr_t P2V(uintptr_t p_addr) { return p_addr + ckern::Util::KERN_OFFSET; }
+
   template<typename T>
   T *base_to_table(uintptr_t base)
   {
-    return reinterpret_cast<T *>(base << 12);
+    return reinterpret_cast<T *>(P2V(base << 12));
   }
 
   constexpr uint64_t PT_PRESENT{0x1};
   constexpr uint64_t PT_RW{0x2};
-
-  constexpr uintptr_t NEG_1TB{0xffffff0000000000};
-  constexpr uintptr_t NEG_2GB{0xffffffff80000000};
 
   void init_kern_paging();
 
