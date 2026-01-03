@@ -9,6 +9,8 @@ struct
 
 extern "C" void init_gdt(void *gdtr);
 
+ckern::GDT::TSS tss{};
+
 void ckern::GDT::GDT::init()
 {
   ckern::Framebuffer::puts("Initializing GDT...");
@@ -18,7 +20,7 @@ void ckern::GDT::GDT::init()
   entries[Entries::Ring0Code] = ckern::GDT::GDTEntry{
     0x0, 
     0xFFFFF,
-    {true, true, true, true, 1, 0, 1},
+    {true, true, false, true, 1, 0, 1},
     {true, 0, 1}
   }.encode();
   entries[Entries::Ring0Data] = ckern::GDT::GDTEntry{
@@ -39,6 +41,14 @@ void ckern::GDT::GDT::init()
     {true, true, false, false, 1, 3, 1},
     {true, 0, 1}
   }.encode();
+
+  // TODO make a new stack for this?
+  tss.rsp0 = reinterpret_cast<void *>(ckern::Util::KERN_OFFSET-8);
+
+  auto tss_desc = ckern::GDT::TSSDescriptor{&tss};
+
+  entries[Entries::TSS1] = tss_desc.encode_low();
+  entries[Entries::TSS2] = tss_desc.encode_high();
 
   gdtr.limit = sizeof(entries) - 1;
   gdtr.addr = entries;

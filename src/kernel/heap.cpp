@@ -67,7 +67,6 @@ void *ckern::memory::Heap::alloc(size_t size)
 
       return &new_alloc->data[0];
     }
-
     allocation = allocation->next;
   }
 
@@ -81,24 +80,36 @@ void *ckern::memory::Heap::alloc_heap_end(HeapAllocation *last, size_t size)
   const auto last_end_offset = reinterpret_cast<uintptr_t>(last) + last->size + sizeof(*last) - start_addr;
   const auto remaining = total_allocated - last_end_offset;
   const auto required = size + sizeof(HeapAllocation);
-  if (required <= remaining)
-  {
-    HeapAllocation *new_last = reinterpret_cast<HeapAllocation *>(start_addr + last_end_offset);
-    new_last = new (new_last) HeapAllocation();
 
-    new_last->size = size;
-    new_last->prev = last;
-    new_last->used = true;
-    
-    last->next = new_last;
-    return reinterpret_cast<void *>(new_last + 1);
+  // If we need to map new pages, do that first
+  if (required > remaining)
+  {
+    const auto required_new_bytes = required - remaining;
+    auto required_new_pages = required_new_bytes / ckern::Paging::PAGE_SIZE;
+    if (required_new_bytes % ckern::Paging::PAGE_SIZE != 0) { required_new_pages++; }
+
+    for (unsigned i = 0; i < required_new_pages; i++) { add_page(); }
   }
 
-  return nullptr;
+  HeapAllocation *new_last = reinterpret_cast<HeapAllocation *>(start_addr + last_end_offset);
+  new_last = new (new_last) HeapAllocation();
+
+  new_last->size = size;
+  new_last->prev = last;
+  new_last->used = true;
+  
+  last->next = new_last;
+  return reinterpret_cast<void *>(new_last + 1);
 }
 
 void ckern::memory::Heap::free(void *ptr)
 {
   HeapAllocation *allocation = reinterpret_cast<HeapAllocation *>(ptr) - 1;
   allocation->used = false;
+
+  // If this is the last allocation, unset the previous allocation's next pointer so that it's the new last thing on the heap
+  if (!allocation->next)
+  {
+    allocation->prev->next = nullptr;
+  }
 }

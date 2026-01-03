@@ -10,6 +10,8 @@
 #include "paging.h"
 #include "heap.h"
 
+extern "C" void enter_ring3();
+
 extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
 {
   ckern::Interrupts::disable();
@@ -72,8 +74,21 @@ extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
   auto p2 = ckern::memory::phys_alloc.alloc_page();
   ckern::Framebuffer::printf("Allocated page at 0x%x\n", reinterpret_cast<uintptr_t>(p));
   ckern::Framebuffer::printf("Allocated page at 0x%x\n", reinterpret_cast<uintptr_t>(p2));
+  
+  auto bar = ckern::memory::init_kern_heap().alloc(1024);
+  auto foo = ckern::memory::init_kern_heap().alloc(4096);
+  ckern::memory::init_kern_heap().free(foo);
+  ckern::memory::init_kern_heap().alloc(421);
+  ckern::memory::init_kern_heap().free(bar);
+  ckern::memory::init_kern_heap().alloc(34);
+  ckern::memory::init_kern_heap().alloc(14);
+  ckern::memory::init_kern_heap().alloc(16384);
+
+  ckern::memory::init_kern_heap().dump();
 
   ckern::Interrupts::enable();
+
+  enter_ring3();
 
   while (1) {};
 

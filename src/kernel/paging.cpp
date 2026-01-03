@@ -20,7 +20,7 @@ void ckern::Paging::map_page(uintptr_t phys, uintptr_t virt)
   {
     auto new_pdp = reinterpret_cast<uintptr_t>(memory::phys_alloc.alloc_page());
     Util::memset(reinterpret_cast<void *>(P2V(new_pdp)), 0, PAGE_SIZE);
-    kern_pml4[pml4_off_id] = {PT_PRESENT | PT_RW, PT_ADDR_BASE(new_pdp), 0, 0};
+    kern_pml4[pml4_off_id] = {PT_PRESENT | PT_RW | PT_USER, PT_ADDR_BASE(new_pdp), 0, 0};
   }
 
   const auto pdp = base_to_table<PDPEntry>(kern_pml4[pml4_off_id].page_dir_pointer_base);
@@ -29,7 +29,7 @@ void ckern::Paging::map_page(uintptr_t phys, uintptr_t virt)
   {
     auto new_pd = reinterpret_cast<uintptr_t>(memory::phys_alloc.alloc_page());
     Util::memset(reinterpret_cast<void *>(P2V(new_pd)), 0, PAGE_SIZE);
-    pdp[pdp_off_id] = {PT_PRESENT | PT_RW, PT_ADDR_BASE(new_pd), 0, 0};
+    pdp[pdp_off_id] = {PT_PRESENT | PT_RW | PT_USER, PT_ADDR_BASE(new_pd), 0, 0};
   }
 
   const auto pd = base_to_table<PDEntry>(pdp[pdp_off_id].page_dir_base);
@@ -38,12 +38,12 @@ void ckern::Paging::map_page(uintptr_t phys, uintptr_t virt)
   {
     auto new_pt = reinterpret_cast<uintptr_t>(memory::phys_alloc.alloc_page());
     Util::memset(reinterpret_cast<void *>(P2V(new_pt)), 0, PAGE_SIZE);
-    pd[pd_off_id] = {PT_PRESENT | PT_RW, PT_ADDR_BASE(new_pt), 0, 0};
+    pd[pd_off_id] = {PT_PRESENT | PT_RW | PT_USER, PT_ADDR_BASE(new_pt), 0, 0};
   }
 
   const auto pt = base_to_table<PTEntry>(pd[pd_off_id].page_table_base);
 
-  pt[VIRT_PT_OFF(virt)] = PTEntry{PT_PRESENT | PT_RW, PT_ADDR_BASE(phys), 0, 0};
+  pt[VIRT_PT_OFF(virt)] = PTEntry{PT_PRESENT | PT_RW | PT_USER, PT_ADDR_BASE(phys), 0, 0};
 }
 
 void ckern::Paging::switch_pages(PML4Entry *new_pml4)

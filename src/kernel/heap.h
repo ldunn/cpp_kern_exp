@@ -22,6 +22,8 @@ namespace ckern::memory
     // and the beginning of the next allocation's header
     inline size_t bytes_available()
     {
+      if (!next) return 0;
+      
       if (!used)
         return reinterpret_cast<uintptr_t>(next) - reinterpret_cast<uintptr_t>(&data[0]);
       else

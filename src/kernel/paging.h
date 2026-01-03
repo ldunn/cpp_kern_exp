@@ -62,6 +62,7 @@ namespace ckern::Paging
 
   constexpr uint64_t PT_PRESENT{0x1};
   constexpr uint64_t PT_RW{0x2};
+  constexpr uint64_t PT_USER{0x4};
 
   void init_kern_paging();
 

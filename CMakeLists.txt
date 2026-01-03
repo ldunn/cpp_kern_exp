@@ -54,7 +54,7 @@ add_custom_target(iso
 
 add_custom_target(qemu-gdb
     ALL
-    COMMAND qemu-system-x86_64 -d int -no-reboot -no-shutdown -cdrom os.iso -s -S -daemonize
+    COMMAND qemu-system-x86_64 -D qemu.log -d int -machine pc,accel=tcg -no-reboot -no-shutdown -cdrom os.iso -s -S -daemonize
     COMMAND gdb -ex "target remote localhost:1234")
 set_target_properties(qemu-gdb PROPERTIES EXCLUDE_FROM_ALL TRUE)
 

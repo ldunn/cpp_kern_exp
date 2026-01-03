@@ -12,6 +12,7 @@ add_executable(kernel.elf
     portio.s
     interrupts.s
     gdt.s
+    user.s
 )
 
 set_target_properties(kernel.elf PROPERTIES LINKER_LANGUAGE CXX)
