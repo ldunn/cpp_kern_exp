@@ -1,3 +1,4 @@
+#include <bit>
 #include <cstdint>
 
 #include "util.h"
@@ -54,6 +55,8 @@ namespace ckern::Paging
 
   constexpr uintptr_t P2V(uintptr_t p_addr) { return p_addr + ckern::Util::KERN_OFFSET; }
 
+  uintptr_t V2P(uintptr_t v_addr);
+
   template<typename T>
   T *base_to_table(uintptr_t base)
   {
@@ -66,9 +69,17 @@ namespace ckern::Paging
 
   void init_kern_paging();
 
-  void map_page(uintptr_t phys, uintptr_t virt);
+  uintptr_t get_active_pages();
+
+  void map_page(PML4Entry *pml4, uintptr_t phys, uintptr_t virt);
+
+  inline void map_page(uintptr_t phys, uintptr_t virt) { map_page(reinterpret_cast<PML4Entry *>(P2V(get_active_pages())), phys, virt); };
+
+  inline void map_page_kern(uintptr_t phys, uintptr_t virt) { map_page(kern_pml4, phys, virt); }
 
   void switch_pages(PML4Entry *new_pml4);
+
+
 }
 
 #endif

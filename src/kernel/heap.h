@@ -1,7 +1,9 @@
 #include "video.h"
 
+#include <utility>
 #include <cstddef>
 #include <cstdint>
+#include <new>
 
 #ifndef CKERN_HEAP_H
 #define CKERN_HEAP_H
@@ -60,6 +62,54 @@ namespace ckern::memory
   Heap &init_kern_heap();
 
   constexpr uintptr_t KHEAP_START_ADDR = 0xfffffc0000000000; // -4TB
+
+  template <typename T>
+  struct kunique_ptr
+  {
+    T *ptr;
+
+    kunique_ptr(T *ptr) : ptr(ptr) {};
+
+    kunique_ptr() = default;
+
+    ~kunique_ptr() 
+    { 
+      if (ptr)
+      {
+        ckern::memory::init_kern_heap().free(ptr); 
+        ptr = nullptr;
+      }
+    }
+
+    kunique_ptr(const kunique_ptr<T> &) = delete;
+    kunique_ptr &operator=(const kunique_ptr<T> &) = delete;
+    kunique_ptr(kunique_ptr<T> &&o) : ptr(std::exchange(o.ptr, nullptr)) {};
+    kunique_ptr &operator=(kunique_ptr<T> &&o)
+    { 
+      if (o == *this) { return *this; }
+      ptr = std::exchange(o.ptr, nullptr);
+      return *this;
+    }
+
+    bool operator==(const kunique_ptr<T> &) const = default;
+
+    explicit operator bool() const { return ptr; }
+
+    T &operator*() { return *ptr; }
+    T* operator->() { return ptr; }
+
+    T* get() const { return ptr; }
+
+    T* release() { T* _ptr = ptr; ptr = nullptr; return _ptr; }
+  };
+
+  template<typename T, typename... Args>
+  kunique_ptr<T> make_kunique(Args && ...args)
+  {
+    T *ptr = reinterpret_cast<T *>(ckern::memory::init_kern_heap().alloc(sizeof(T)));
+    ptr = new(ptr) T(std::forward<Args>(args)...);
+    return kunique_ptr<T>(ptr);
+  }
 }
 
 #endif

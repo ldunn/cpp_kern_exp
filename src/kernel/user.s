@@ -10,9 +10,9 @@ enter_ring3:
     mov fs, ax
     mov gs, ax
 
-    push 0x23
+    push (0x20 | 3)
     push rsp
     pushfq
-    push 0x1B
+    push (0x18 | 3)
     push test_user
     iretq

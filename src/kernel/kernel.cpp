@@ -9,6 +9,8 @@
 #include "phys_alloc.h"
 #include "paging.h"
 #include "heap.h"
+#include "process.h"
+#include <new>
 
 extern "C" void enter_ring3();
 
@@ -46,15 +48,14 @@ extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
 
   while (phys_addr < 128 * 1024 * 1024)
   {
-    //ckern::Paging::map_page(phys_addr, virt_addr_lo);
-    ckern::Paging::map_page(phys_addr, virt_addr_hi);
+    ckern::Paging::map_page_kern(phys_addr, virt_addr_hi);
     phys_addr += ckern::Paging::PAGE_SIZE;
     virt_addr_hi += ckern::Paging::PAGE_SIZE;
   }
 
   // Make a new kernel stack just below the -2GB mark TODO make this larger than one page, copy the stack properly
   auto new_stack_phys = reinterpret_cast<char *>(ckern::memory::phys_alloc.alloc_page());
-  ckern::Paging::map_page(reinterpret_cast<uintptr_t>(new_stack_phys), ckern::Util::KERN_OFFSET - ckern::Paging::PAGE_SIZE);
+  ckern::Paging::map_page_kern(reinterpret_cast<uintptr_t>(new_stack_phys), ckern::Util::KERN_OFFSET - ckern::Paging::PAGE_SIZE);
   auto new_stack_virt = reinterpret_cast<char *>(new_stack_phys + ckern::Util::KERN_OFFSET);
   char *rsp, *rbp;
   asm volatile("mov %%rsp, %0" : "=r"(rsp));
@@ -69,24 +70,11 @@ extern "C" int kmain(uint32_t mb_magic, ckern::MultibootInfo *mb_info)
 
   ckern::memory::init_kern_heap();
 
-  auto p = ckern::memory::phys_alloc.alloc_page();
-  ckern::memory::phys_alloc.free_page(p);
-  auto p2 = ckern::memory::phys_alloc.alloc_page();
-  ckern::Framebuffer::printf("Allocated page at 0x%x\n", reinterpret_cast<uintptr_t>(p));
-  ckern::Framebuffer::printf("Allocated page at 0x%x\n", reinterpret_cast<uintptr_t>(p2));
-  
-  auto bar = ckern::memory::init_kern_heap().alloc(1024);
-  auto foo = ckern::memory::init_kern_heap().alloc(4096);
-  ckern::memory::init_kern_heap().free(foo);
-  ckern::memory::init_kern_heap().alloc(421);
-  ckern::memory::init_kern_heap().free(bar);
-  ckern::memory::init_kern_heap().alloc(34);
-  ckern::memory::init_kern_heap().alloc(14);
-  ckern::memory::init_kern_heap().alloc(16384);
-
-  ckern::memory::init_kern_heap().dump();
-
   ckern::Interrupts::enable();
+
+  auto proc = reinterpret_cast<ckern::Process *>(ckern::memory::init_kern_heap().alloc(sizeof(ckern::Process)));
+  proc = new (proc) ckern::Process();
+  proc->activate();
 
   enter_ring3();
 
